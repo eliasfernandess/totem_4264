@@ -177,16 +177,10 @@ export default function RoletaPage() {
         <div className="text-center mb-8 animate-fade-in">
           <h1 className="text-4xl font-black text-white font-display">🎡 Hora da Sorte!</h1>
           <p className="text-gray-300 text-xl mt-2">Toque no botão e gire a roleta!</p>
-
-          {/* Mini placar */}
-          <div className="flex items-center justify-center gap-4 mt-4">
-            <div className="bg-white/10 rounded-xl px-4 py-2">
-              <span className="text-primary font-black text-2xl">{acertos}</span>
-              <span className="text-gray-400 text-sm"> / {totalPerguntas} acertos</span>
-            </div>
-            <div className="bg-white/10 rounded-xl px-4 py-2">
-              <span className="text-[#7DB61C] font-black text-2xl">{percentualAcerto}%</span>
-            </div>
+          <div className="flex items-center justify-center gap-2 mt-3">
+            <span className="bg-white/10 rounded-xl px-4 py-2 text-primary font-bold text-lg">
+              {acertos} / {totalPerguntas} acertos
+            </span>
           </div>
         </div>
 

@@ -24,10 +24,11 @@ export default function QuizPage() {
       return
     }
 
-    fetch('/api/perguntas')
+    fetch(`/api/perguntas?t=${Date.now()}`, { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
         if (data.error) throw new Error(data.error)
+        if (!Array.isArray(data)) throw new Error('Resposta inválida da API')
         // Limitar a MAX_PERGUNTAS, já embaralhadas pela API
         setPerguntas(data.slice(0, MAX_PERGUNTAS))
       })
@@ -93,10 +94,11 @@ export default function QuizPage() {
               if (erro) {
                 setErro(null)
                 setLoading(true)
-                fetch('/api/perguntas')
+                fetch(`/api/perguntas?t=${Date.now()}`, { cache: 'no-store' })
                   .then((res) => res.json())
                   .then((data) => {
                     if (data.error) throw new Error(data.error)
+                    if (!Array.isArray(data)) throw new Error('Resposta inválida')
                     setPerguntas(data.slice(0, MAX_PERGUNTAS))
                   })
                   .catch(() => setErro('Erro ao carregar perguntas. Tente novamente.'))

@@ -40,6 +40,7 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
       <div
         className={clsx(
           'relative w-full bg-white rounded-3xl shadow-2xl p-8 animate-slide-up',
+          'max-h-[90vh] overflow-y-auto',
           sizes[size]
         )}
       >

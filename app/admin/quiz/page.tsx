@@ -117,7 +117,18 @@ export default function AdminQuizPage() {
       <AdminNav />
       <main className="max-w-5xl mx-auto px-6 py-8">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Gerenciar Quiz</h1>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Gerenciar Quiz</h1>
+            {!loading && perguntas.length > 0 && (
+              <p className="text-sm mt-1">
+                <span className="text-green-600 font-semibold">{perguntas.filter(p => p.ativa).length} ativas</span>
+                <span className="text-gray-400"> / {perguntas.length} total</span>
+                {perguntas.filter(p => p.ativa).length < 8 && (
+                  <span className="text-orange-500 ml-2">— ative mais para ter 8 no quiz</span>
+                )}
+              </p>
+            )}
+          </div>
           <button
             onClick={abrirCriar}
             className="bg-primary text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-primary-hover transition-colors"
