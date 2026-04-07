@@ -10,6 +10,9 @@ const premioSchema = z.object({
   percentual_acerto: z.number().int().min(0).max(100).default(0),
 })
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export async function GET(): Promise<NextResponse> {
   try {
     const supabase = createServiceClient()
@@ -24,7 +27,9 @@ export async function GET(): Promise<NextResponse> {
       return NextResponse.json({ error: 'Erro ao buscar prêmios.' }, { status: 500 })
     }
 
-    return NextResponse.json(data ?? [])
+    return NextResponse.json(data ?? [], {
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate', 'Pragma': 'no-cache' },
+    })
   } catch {
     return NextResponse.json({ error: 'Erro interno.' }, { status: 500 })
   }

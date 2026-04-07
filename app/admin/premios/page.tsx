@@ -26,7 +26,7 @@ export default function AdminPremiosPage() {
 
   const carregar = async () => {
     setLoading(true)
-    const res = await fetch('/api/admin/premios')
+    const res = await fetch(`/api/admin/premios?t=${Date.now()}`, { cache: 'no-store' })
     const data = await res.json()
     if (!data.error) setPremios(data)
     setLoading(false)

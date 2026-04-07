@@ -24,10 +24,10 @@ export default function RoletaPage() {
       return
     }
 
-    fetch(`/api/premios?acertos=${acertos}&total=${totalPerguntas}`)
+    fetch(`/api/premios?acertos=${acertos}&total=${totalPerguntas}&t=${Date.now()}`, { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
-        if (!data.error) setPremios(data)
+        if (Array.isArray(data)) setPremios(data)
       })
       .finally(() => setLoading(false))
   }, [leadId, quizCompleto, acertos, totalPerguntas, router])
