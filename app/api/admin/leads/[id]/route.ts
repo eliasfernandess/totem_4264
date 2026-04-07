@@ -8,17 +8,33 @@ export async function DELETE(
   try {
     const supabase = createServiceClient()
 
-    const { error } = await supabase
+    // Primeiro verifica se o lead existe
+    const { data: lead, error: erroGet } = await supabase
       .from('leads')
-      .delete()
+      .select('id')
+      .eq('id', params.id)
+      .single()
+
+    if (erroGet || !lead) {
+      return NextResponse.json({ error: `Lead não encontrado: ${erroGet?.message}` }, { status: 404 })
+    }
+
+    // Deleta respostas e premios relacionados manualmente (por segurança)
+    await supabase.from('respostas_usuario').delete().eq('lead_id', params.id)
+    await supabase.from('premios_usuario').delete().eq('lead_id', params.id)
+
+    // Deleta o lead
+    const { error, count } = await supabase
+      .from('leads')
+      .delete({ count: 'exact' })
       .eq('id', params.id)
 
     if (error) {
-      return NextResponse.json({ error: 'Erro ao excluir lead.' }, { status: 500 })
+      return NextResponse.json({ error: `Erro Supabase: ${error.message}` }, { status: 500 })
     }
 
-    return NextResponse.json({ ok: true })
-  } catch {
-    return NextResponse.json({ error: 'Erro interno.' }, { status: 500 })
+    return NextResponse.json({ ok: true, deletados: count })
+  } catch (e) {
+    return NextResponse.json({ error: `Exceção: ${String(e)}` }, { status: 500 })
   }
 }
