@@ -34,65 +34,56 @@ export function Roleta({ premios, premioSorteado, onGirar, girando, anguloAtual 
 
     ctx.clearRect(0, 0, SIZE, SIZE)
 
-    // Sombra externa
-    ctx.save()
-    ctx.shadowColor = 'rgba(0,0,0,0.3)'
-    ctx.shadowBlur = 20
-    ctx.beginPath()
-    ctx.arc(cx, cy, raio, 0, 2 * Math.PI)
-    ctx.fillStyle = '#fff'
-    ctx.fill()
-    ctx.restore()
-
     premios.forEach((premio, i) => {
       const inicio = fatia * i - Math.PI / 2
       const fim = inicio + fatia
       const meio = inicio + fatia / 2
 
-      // Fatia colorida
+      // Fatia
       ctx.beginPath()
       ctx.moveTo(cx, cy)
       ctx.arc(cx, cy, raio, inicio, fim)
       ctx.closePath()
       ctx.fillStyle = CORES[i % CORES.length]
       ctx.fill()
-      ctx.strokeStyle = 'rgba(255,255,255,0.6)'
+      ctx.strokeStyle = 'rgba(255,255,255,0.7)'
       ctx.lineWidth = 2
       ctx.stroke()
 
       // Texto sempre legível
-      ctx.save()
-      ctx.translate(cx, cy)
-
-      // Se o texto ficaria de cabeça pra baixo, vira 180°
-      const anguloDeg = (meio * 180) / Math.PI
-      const virado = anguloDeg > 90 && anguloDeg < 270
-
-      if (virado) {
-        ctx.rotate(meio + Math.PI)
-        ctx.textAlign = 'left'
-      } else {
-        ctx.rotate(meio)
-        ctx.textAlign = 'right'
-      }
-
-      const maxLen = premios.length > 5 ? 12 : 15
+      const maxLen = premios.length > 5 ? 11 : 14
       const texto = premio.nome.length > maxLen
         ? premio.nome.slice(0, maxLen) + '…'
         : premio.nome
 
-      const fontSize = premios.length > 6 ? 13 : 15
+      const fontSize = premios.length > 6 ? 12 : 14
       ctx.font = `bold ${fontSize}px Inter, sans-serif`
       ctx.fillStyle = '#ffffff'
-      ctx.shadowColor = 'rgba(0,0,0,0.5)'
-      ctx.shadowBlur = 3
+      ctx.shadowColor = 'rgba(0,0,0,0.6)'
+      ctx.shadowBlur = 4
 
-      const x = virado ? raio * 0.35 : -(raio * 0.35)
-      ctx.fillText(texto, x, 5)
+      ctx.save()
+      ctx.translate(cx, cy)
+
+      const flipped = Math.cos(meio) < 0
+
+      if (flipped) {
+        // Fatia na metade esquerda — girar 180° para texto ficar legível
+        ctx.rotate(meio + Math.PI)
+        ctx.textAlign = 'center'
+        ctx.fillText(texto, -(raio * 0.58), 5)
+      } else {
+        // Fatia na metade direita — texto normal
+        ctx.rotate(meio)
+        ctx.textAlign = 'center'
+        ctx.fillText(texto, raio * 0.58, 5)
+      }
+
       ctx.restore()
     })
 
     // Círculo central
+    ctx.shadowBlur = 0
     ctx.beginPath()
     ctx.arc(cx, cy, 26, 0, 2 * Math.PI)
     ctx.fillStyle = '#ffffff'
@@ -101,7 +92,6 @@ export function Roleta({ premios, premioSorteado, onGirar, girando, anguloAtual 
     ctx.lineWidth = 3
     ctx.stroke()
 
-    // Ponto central
     ctx.beginPath()
     ctx.arc(cx, cy, 8, 0, 2 * Math.PI)
     ctx.fillStyle = '#00AE9D'
@@ -111,15 +101,15 @@ export function Roleta({ premios, premioSorteado, onGirar, girando, anguloAtual 
   return (
     <div className="flex flex-col items-center gap-8">
       <div className="relative">
-        {/* Seta indicadora */}
-        <div className="absolute top-[-8px] left-1/2 -translate-x-1/2 z-10 drop-shadow-lg">
-          <svg width="32" height="40" viewBox="0 0 32 40" fill="none">
-            <polygon points="16,40 0,0 32,0" fill="#003641" />
-            <polygon points="16,34 4,4 28,4" fill="#00AE9D" />
+        {/* Seta */}
+        <div className="absolute top-[-6px] left-1/2 -translate-x-1/2 z-10 drop-shadow-lg">
+          <svg width="28" height="36" viewBox="0 0 28 36" fill="none">
+            <polygon points="14,36 0,0 28,0" fill="#003641" />
+            <polygon points="14,30 4,4 24,4" fill="#00AE9D" />
           </svg>
         </div>
 
-        {/* Anel externo decorativo */}
+        {/* Anel externo */}
         <div
           className="rounded-full p-2 shadow-2xl"
           style={{ background: 'linear-gradient(135deg, #003641, #00AE9D)' }}
