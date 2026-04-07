@@ -1,0 +1,84 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-primary:       #00AE9D;
+  --color-secondary:     #003641;
+  --color-green-medium:  #7DB61C;
+  --color-green-light:   #C9D200;
+  --color-accent:        #49479D;
+  --color-white:         #FFFFFF;
+  --color-primary-hover: #008C7E;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background-color: var(--color-secondary);
+  color: var(--color-white);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: 'Inter', sans-serif;
+}
+
+/* Kiosk scrollable content */
+.kiosk-scroll {
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.kiosk-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* Admin panel can scroll */
+.admin-layout {
+  user-select: text;
+  -webkit-user-select: text;
+  overflow: auto;
+}
+
+@layer utilities {
+  .font-display {
+    font-family: 'Inter', sans-serif;
+  }
+  .font-body {
+    font-family: 'DM Sans', sans-serif;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(24px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.4s ease-out;
+}

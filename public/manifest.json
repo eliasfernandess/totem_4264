@@ -1,0 +1,9 @@
+{
+  "name": "Totem Interativo",
+  "short_name": "Totem",
+  "display": "fullscreen",
+  "start_url": "/",
+  "theme_color": "#00AE9D",
+  "background_color": "#003641",
+  "icons": []
+}
