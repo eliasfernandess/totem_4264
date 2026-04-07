@@ -24,7 +24,7 @@ export default function RoletaPage() {
       return
     }
 
-    fetch(`/api/premios?acertos=${acertos}&total=${totalPerguntas}&t=${Date.now()}`, { cache: 'no-store' })
+    fetch(`/api/premios?t=${Date.now()}`, { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) setPremios(data)
