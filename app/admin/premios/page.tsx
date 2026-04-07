@@ -12,7 +12,7 @@ interface PremioForm {
   ativo: boolean
 }
 
-const formVazio: PremioForm = { nome: '', descricao: '', estoque: '0', ativo: true }
+const formVazio: PremioForm = { nome: '', descricao: '', estoque: '10', ativo: true }
 
 export default function AdminPremiosPage() {
   const [premios, setPremios] = useState<Premio[]>([])
@@ -70,13 +70,17 @@ export default function AdminPremiosPage() {
     const data = await res.json()
     setSalvando(false)
 
-    if (data.error) {
-      setErro(data.error)
-      return
-    }
+    if (data.error) { setErro(data.error); return }
 
     setModalAberto(false)
     carregar()
+  }
+
+  const handleExcluir = async (id: string, nome: string) => {
+    if (!confirm(`Excluir o prêmio "${nome}"? Esta ação é irreversível.`)) return
+    setPremios((prev) => prev.filter((p) => p.id !== id))
+    const res = await fetch(`/api/admin/premios/${id}`, { method: 'DELETE' })
+    if (!res.ok) carregar()
   }
 
   const setField = (campo: keyof PremioForm, valor: string | boolean) => {
@@ -106,33 +110,37 @@ export default function AdminPremiosPage() {
             {premios.map((p) => (
               <div key={p.id} className="bg-white rounded-2xl shadow p-5">
                 <div className="flex items-start justify-between">
-                  <div>
+                  <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="font-bold text-gray-900">{p.nome}</h3>
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                          p.ativo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'
-                        }`}
-                      >
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                        p.ativo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'
+                      }`}>
                         {p.ativo ? 'Ativo' : 'Inativo'}
                       </span>
                     </div>
                     {p.descricao && <p className="text-sm text-gray-500 mb-2">{p.descricao}</p>}
                     <div className="flex items-center gap-1 text-sm">
                       <span className="text-gray-500">Estoque:</span>
-                      <span
-                        className={`font-bold ${p.estoque > 0 ? 'text-green-600' : 'text-red-600'}`}
-                      >
+                      <span className={`font-bold ${p.estoque > 0 ? 'text-green-600' : 'text-red-600'}`}>
                         {p.estoque}
                       </span>
                     </div>
                   </div>
-                  <button
-                    onClick={() => abrirEditar(p)}
-                    className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 transition-colors flex-shrink-0"
-                  >
-                    Editar
-                  </button>
+                  <div className="flex flex-col gap-2 flex-shrink-0 ml-4">
+                    <button
+                      onClick={() => abrirEditar(p)}
+                      className="px-4 py-1.5 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => handleExcluir(p.id, p.nome)}
+                      className="px-4 py-1.5 rounded-lg bg-red-50 text-red-600 text-sm font-semibold hover:bg-red-100 transition-colors"
+                    >
+                      Excluir
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -182,7 +190,7 @@ export default function AdminPremiosPage() {
                   type="checkbox"
                   checked={form.ativo}
                   onChange={(e) => setField('ativo', e.target.checked)}
-                  className="w-4 h-4 text-primary rounded"
+                  className="w-4 h-4 accent-primary"
                 />
                 <span className="text-sm font-semibold text-gray-700">Ativo</span>
               </label>

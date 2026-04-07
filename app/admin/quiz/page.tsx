@@ -167,7 +167,7 @@ export default function AdminQuizPage() {
                   <div className="flex flex-col gap-2 flex-shrink-0">
                     <button
                       onClick={() => abrirEditar(p)}
-                      className="px-4 py-1.5 rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 transition-colors text-gray-700"
+                      className="px-4 py-1.5 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
                     >
                       Editar
                     </button>
