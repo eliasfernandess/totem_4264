@@ -22,12 +22,16 @@ export default function AdminLeadsPage() {
 
   const handleExcluir = async (id: string, nome: string) => {
     if (!confirm(`Excluir o lead "${nome}"? Esta ação é irreversível.`)) return
-    // Remove imediatamente da UI
     setLeads((prev) => prev.filter((l) => l.id !== id))
-    // Confirma no backend
-    const res = await fetch(`/api/admin/leads/${id}`, { method: 'DELETE' })
-    if (!res.ok) {
-      // Restaura se falhou
+    try {
+      const res = await fetch(`/api/admin/leads/${id}`, { method: 'DELETE' })
+      const data = await res.json()
+      if (!res.ok) {
+        alert(`Erro ao excluir: ${data.error ?? res.status}`)
+        carregar()
+      }
+    } catch (e) {
+      alert('Erro de conexão ao excluir.')
       carregar()
     }
   }

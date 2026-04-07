@@ -4,20 +4,16 @@ import type { NextRequest } from 'next/server'
 
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
-  const supabase = createMiddlewareClient({ req, res })
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
 
-  if (req.nextUrl.pathname.startsWith('/admin') && !session) {
-    if (req.nextUrl.pathname !== '/admin/login') {
-      return NextResponse.redirect(new URL('/admin/login', req.url))
-    }
-  }
+  // Protege apenas as páginas do painel admin (não as API routes)
+  if (req.nextUrl.pathname.startsWith('/admin')) {
+    if (req.nextUrl.pathname === '/admin/login') return res
 
-  if (req.nextUrl.pathname.startsWith('/api/admin')) {
+    const supabase = createMiddlewareClient({ req, res })
+    const { data: { session } } = await supabase.auth.getSession()
+
     if (!session) {
-      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+      return NextResponse.redirect(new URL('/admin/login', req.url))
     }
   }
 
@@ -25,5 +21,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/api/admin/:path*'],
+  matcher: ['/admin/:path*'],
 }
