@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export async function GET(): Promise<NextResponse> {
   try {
@@ -16,7 +17,12 @@ export async function GET(): Promise<NextResponse> {
       return NextResponse.json({ error: 'Erro ao buscar leads.' }, { status: 500 })
     }
 
-    return NextResponse.json(data ?? [])
+    return NextResponse.json(data ?? [], {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Pragma': 'no-cache',
+      },
+    })
   } catch {
     return NextResponse.json({ error: 'Erro interno.' }, { status: 500 })
   }

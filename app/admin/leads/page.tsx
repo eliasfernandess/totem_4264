@@ -12,7 +12,7 @@ export default function AdminLeadsPage() {
 
   const carregar = () => {
     setLoading(true)
-    fetch('/api/admin/leads')
+    fetch(`/api/admin/leads?t=${Date.now()}`, { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => { if (!data.error) setLeads(data) })
       .finally(() => setLoading(false))
