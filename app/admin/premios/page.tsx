@@ -10,9 +10,10 @@ interface PremioForm {
   descricao: string
   estoque: string
   ativo: boolean
+  percentual_acerto: string
 }
 
-const formVazio: PremioForm = { nome: '', descricao: '', estoque: '10', ativo: true }
+const formVazio: PremioForm = { nome: '', descricao: '', estoque: '10', ativo: true, percentual_acerto: '0' }
 
 export default function AdminPremiosPage() {
   const [premios, setPremios] = useState<Premio[]>([])
@@ -42,7 +43,13 @@ export default function AdminPremiosPage() {
 
   const abrirEditar = (p: Premio) => {
     setEditando(p.id)
-    setForm({ nome: p.nome, descricao: p.descricao ?? '', estoque: p.estoque.toString(), ativo: p.ativo })
+    setForm({
+      nome: p.nome,
+      descricao: p.descricao ?? '',
+      estoque: p.estoque.toString(),
+      ativo: p.ativo,
+      percentual_acerto: (p.percentual_acerto ?? 0).toString(),
+    })
     setErro(null)
     setModalAberto(true)
   }
@@ -56,6 +63,7 @@ export default function AdminPremiosPage() {
       descricao: form.descricao || null,
       estoque: parseInt(form.estoque) || 0,
       ativo: form.ativo,
+      percentual_acerto: parseInt(form.percentual_acerto) || 0,
     }
 
     const url = editando ? `/api/admin/premios/${editando}` : '/api/admin/premios'
@@ -87,12 +95,24 @@ export default function AdminPremiosPage() {
     setForm((prev) => ({ ...prev, [campo]: valor }))
   }
 
+  const getBadgePercentual = (p: number) => {
+    if (p === 0) return { label: '0% — todos ganham', color: 'bg-blue-100 text-blue-700' }
+    if (p <= 30) return { label: `≥${p}% acertos`, color: 'bg-green-100 text-green-700' }
+    if (p <= 60) return { label: `≥${p}% acertos`, color: 'bg-yellow-100 text-yellow-700' }
+    return { label: `≥${p}% acertos`, color: 'bg-red-100 text-red-600' }
+  }
+
   return (
     <div>
       <AdminNav />
       <main className="max-w-5xl mx-auto px-6 py-8">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Gerenciar Prêmios</h1>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Gerenciar Prêmios</h1>
+            <p className="text-sm text-gray-500 mt-1">
+              O % mínimo de acerto define quais clientes são elegíveis para cada prêmio
+            </p>
+          </div>
           <button
             onClick={abrirCriar}
             className="bg-primary text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-primary-hover transition-colors"
@@ -107,43 +127,51 @@ export default function AdminPremiosPage() {
           <div className="text-center py-16 text-gray-500">Nenhum prêmio cadastrado.</div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {premios.map((p) => (
-              <div key={p.id} className="bg-white rounded-2xl shadow p-5">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-bold text-gray-900">{p.nome}</h3>
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                        p.ativo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'
-                      }`}>
-                        {p.ativo ? 'Ativo' : 'Inativo'}
-                      </span>
+            {premios.map((p) => {
+              const badge = getBadgePercentual(p.percentual_acerto ?? 0)
+              return (
+                <div key={p.id} className="bg-white rounded-2xl shadow p-5">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <h3 className="font-bold text-gray-900">{p.nome}</h3>
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                          p.ativo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'
+                        }`}>
+                          {p.ativo ? 'Ativo' : 'Inativo'}
+                        </span>
+                      </div>
+                      {p.descricao && <p className="text-sm text-gray-500 mb-2">{p.descricao}</p>}
+                      <div className="flex flex-wrap items-center gap-3 text-sm">
+                        <div className="flex items-center gap-1">
+                          <span className="text-gray-500">Estoque:</span>
+                          <span className={`font-bold ${p.estoque > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {p.estoque}
+                          </span>
+                        </div>
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${badge.color}`}>
+                          {badge.label}
+                        </span>
+                      </div>
                     </div>
-                    {p.descricao && <p className="text-sm text-gray-500 mb-2">{p.descricao}</p>}
-                    <div className="flex items-center gap-1 text-sm">
-                      <span className="text-gray-500">Estoque:</span>
-                      <span className={`font-bold ${p.estoque > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {p.estoque}
-                      </span>
+                    <div className="flex flex-col gap-2 flex-shrink-0 ml-4">
+                      <button
+                        onClick={() => abrirEditar(p)}
+                        className="px-4 py-1.5 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => handleExcluir(p.id, p.nome)}
+                        className="px-4 py-1.5 rounded-lg bg-red-50 text-red-600 text-sm font-semibold hover:bg-red-100 transition-colors"
+                      >
+                        Excluir
+                      </button>
                     </div>
-                  </div>
-                  <div className="flex flex-col gap-2 flex-shrink-0 ml-4">
-                    <button
-                      onClick={() => abrirEditar(p)}
-                      className="px-4 py-1.5 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
-                    >
-                      Editar
-                    </button>
-                    <button
-                      onClick={() => handleExcluir(p.id, p.nome)}
-                      className="px-4 py-1.5 rounded-lg bg-red-50 text-red-600 text-sm font-semibold hover:bg-red-100 transition-colors"
-                    >
-                      Excluir
-                    </button>
                   </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </main>
@@ -173,6 +201,7 @@ export default function AdminPremiosPage() {
               placeholder="Opcional"
             />
           </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">Estoque</label>
@@ -184,17 +213,37 @@ export default function AdminPremiosPage() {
                 className="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary text-gray-900"
               />
             </div>
-            <div className="flex items-end pb-3">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={form.ativo}
-                  onChange={(e) => setField('ativo', e.target.checked)}
-                  className="w-4 h-4 accent-primary"
-                />
-                <span className="text-sm font-semibold text-gray-700">Ativo</span>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
+                % mínimo de acertos
               </label>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                value={form.percentual_acerto}
+                onChange={(e) => setField('percentual_acerto', e.target.value)}
+                className="w-full border-2 border-gray-200 rounded-xl p-3 outline-none focus:border-primary text-gray-900"
+                placeholder="0 = todos ganham"
+              />
             </div>
+          </div>
+
+          <div className="bg-blue-50 rounded-xl p-3 text-sm text-blue-700">
+            <strong>Como funciona:</strong> Clientes com percentual de acertos ≥ ao valor configurado
+            são elegíveis a este prêmio na roleta. Use 0 para que todos sejam elegíveis.
+          </div>
+
+          <div className="flex items-center pb-1">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={form.ativo}
+                onChange={(e) => setField('ativo', e.target.checked)}
+                className="w-4 h-4 accent-primary"
+              />
+              <span className="text-sm font-semibold text-gray-700">Prêmio ativo</span>
+            </label>
           </div>
 
           {erro && (

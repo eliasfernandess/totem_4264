@@ -28,6 +28,7 @@ export interface Premio {
   descricao: string | null
   estoque: number
   ativo: boolean
+  percentual_acerto: number
 }
 
 export interface RespostaUsuario {
@@ -51,6 +52,8 @@ export interface SessionState {
   quizCompleto: boolean
   premioSorteado: Premio | null
   etapa: 'inicio' | 'credenciamento' | 'quiz' | 'roleta' | 'fim'
+  acertos: number
+  totalPerguntas: number
 }
 
 export interface ApiError {

@@ -7,6 +7,7 @@ const premioSchema = z.object({
   descricao: z.string().max(500).optional().nullable(),
   estoque: z.number().int().min(0, 'Estoque não pode ser negativo'),
   ativo: z.boolean().default(true),
+  percentual_acerto: z.number().int().min(0).max(100).default(0),
 })
 
 export async function GET(): Promise<NextResponse> {
@@ -15,7 +16,8 @@ export async function GET(): Promise<NextResponse> {
 
     const { data, error } = await supabase
       .from('premios')
-      .select('id, nome, descricao, estoque, ativo')
+      .select('id, nome, descricao, estoque, ativo, percentual_acerto')
+      .order('percentual_acerto', { ascending: false })
       .order('nome')
 
     if (error) {

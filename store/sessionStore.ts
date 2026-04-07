@@ -4,7 +4,7 @@ import type { Premio, SessionState } from '@/types'
 
 interface SessionStore extends SessionState {
   setLead: (leadId: string, nome: string) => void
-  setQuizCompleto: () => void
+  setQuizCompleto: (acertos: number, totalPerguntas: number) => void
   setPremioSorteado: (premio: Premio) => void
   setEtapa: (etapa: SessionState['etapa']) => void
   resetSession: () => void
@@ -16,6 +16,8 @@ const initialState: SessionState = {
   quizCompleto: false,
   premioSorteado: null,
   etapa: 'inicio',
+  acertos: 0,
+  totalPerguntas: 0,
 }
 
 export const useSessionStore = create<SessionStore>()(
@@ -26,8 +28,8 @@ export const useSessionStore = create<SessionStore>()(
       setLead: (leadId, nome) =>
         set({ leadId, nome, etapa: 'quiz' }),
 
-      setQuizCompleto: () =>
-        set({ quizCompleto: true, etapa: 'roleta' }),
+      setQuizCompleto: (acertos, totalPerguntas) =>
+        set({ quizCompleto: true, etapa: 'roleta', acertos, totalPerguntas }),
 
       setPremioSorteado: (premio) =>
         set({ premioSorteado: premio, etapa: 'fim' }),

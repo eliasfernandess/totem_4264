@@ -7,11 +7,14 @@ import { InactivityReset } from '@/components/kiosk/InactivityReset'
 import { QuizCard } from '@/components/kiosk/QuizCard'
 import type { Pergunta } from '@/types'
 
+const MAX_PERGUNTAS = 8
+
 export default function QuizPage() {
   const router = useRouter()
   const { leadId, setQuizCompleto, resetSession } = useSessionStore()
   const [perguntas, setPerguntas] = useState<Pergunta[]>([])
   const [indicePergunta, setIndicePergunta] = useState(0)
+  const [acertos, setAcertos] = useState(0)
   const [loading, setLoading] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
 
@@ -25,16 +28,21 @@ export default function QuizPage() {
       .then((res) => res.json())
       .then((data) => {
         if (data.error) throw new Error(data.error)
-        setPerguntas(data)
+        // Limitar a MAX_PERGUNTAS, já embaralhadas pela API
+        setPerguntas(data.slice(0, MAX_PERGUNTAS))
       })
       .catch(() => setErro('Erro ao carregar perguntas. Tente novamente.'))
       .finally(() => setLoading(false))
   }, [leadId, router])
 
   const handleResponder = useCallback(
-    async (respostaId: string) => {
+    async (respostaId: string, correta: boolean) => {
       const perguntaAtual = perguntas[indicePergunta]
       if (!perguntaAtual || !leadId) return
+
+      if (correta) {
+        setAcertos((prev) => prev + 1)
+      }
 
       try {
         await fetch('/api/respostas-usuario', {
@@ -52,14 +60,16 @@ export default function QuizPage() {
 
       await new Promise((resolve) => setTimeout(resolve, 1500))
 
+      const novoAcertos = correta ? acertos + 1 : acertos
+
       if (indicePergunta + 1 >= perguntas.length) {
-        setQuizCompleto()
+        setQuizCompleto(novoAcertos, perguntas.length)
         router.push('/roleta')
       } else {
         setIndicePergunta((prev) => prev + 1)
       }
     },
-    [perguntas, indicePergunta, leadId, setQuizCompleto, router]
+    [perguntas, indicePergunta, leadId, acertos, setQuizCompleto, router]
   )
 
   if (loading) {
@@ -80,9 +90,19 @@ export default function QuizPage() {
           <p className="text-white text-2xl">{erro ?? 'Nenhuma pergunta disponível.'}</p>
           <button
             onClick={() => {
-              if (erro) setErro(null)
-              else {
-                setQuizCompleto()
+              if (erro) {
+                setErro(null)
+                setLoading(true)
+                fetch('/api/perguntas')
+                  .then((res) => res.json())
+                  .then((data) => {
+                    if (data.error) throw new Error(data.error)
+                    setPerguntas(data.slice(0, MAX_PERGUNTAS))
+                  })
+                  .catch(() => setErro('Erro ao carregar perguntas. Tente novamente.'))
+                  .finally(() => setLoading(false))
+              } else {
+                setQuizCompleto(0, 0)
                 router.push('/roleta')
               }
             }}
@@ -96,21 +116,43 @@ export default function QuizPage() {
   }
 
   const perguntaAtual = perguntas[indicePergunta]
+  const percentualAcertos = perguntas.length > 0
+    ? Math.round((acertos / Math.max(indicePergunta, 1)) * 100)
+    : 0
 
   return (
     <div className="kiosk-scroll">
       <InactivityReset />
       <div className="min-h-screen flex flex-col items-center justify-center px-8 py-16 bg-gradient-to-br from-secondary via-secondary to-[#001f28]">
-        {/* Header */}
-        <div className="text-center mb-10 animate-fade-in">
-          <div className="w-16 h-16 rounded-full bg-primary/20 border-2 border-primary flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-              />
-            </svg>
+        {/* Header com placar */}
+        <div className="text-center mb-8 animate-fade-in w-full max-w-2xl">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-primary/20 border-2 border-primary flex items-center justify-center">
+                <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                    d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                  />
+                </svg>
+              </div>
+              <h1 className="text-2xl font-black text-white font-display">Quiz</h1>
+            </div>
+
+            {/* Placar de acertos */}
+            {indicePergunta > 0 && (
+              <div className="flex items-center gap-3">
+                <div className="text-center">
+                  <div className="text-3xl font-black text-primary">{acertos}</div>
+                  <div className="text-xs text-gray-400">acertos</div>
+                </div>
+                <div className="text-gray-500 text-xl">/</div>
+                <div className="text-center">
+                  <div className="text-3xl font-black text-gray-300">{indicePergunta}</div>
+                  <div className="text-xs text-gray-400">perguntas</div>
+                </div>
+              </div>
+            )}
           </div>
-          <h1 className="text-3xl font-black text-white font-display">Quiz de Conhecimentos</h1>
         </div>
 
         {/* Quiz Card */}
@@ -120,6 +162,7 @@ export default function QuizPage() {
             pergunta={perguntaAtual}
             numero={indicePergunta + 1}
             total={perguntas.length}
+            acertos={acertos}
             onResponder={handleResponder}
           />
         </div>

@@ -7,6 +7,7 @@ const premioUpdateSchema = z.object({
   descricao: z.string().max(500).optional().nullable(),
   estoque: z.number().int().min(0).optional(),
   ativo: z.boolean().optional(),
+  percentual_acerto: z.number().int().min(0).max(100).optional(),
 })
 
 export async function PUT(
