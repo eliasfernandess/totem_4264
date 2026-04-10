@@ -58,9 +58,22 @@ export function useKioskFullscreen() {
     document.addEventListener('keydown', bloquearTeclas, true)
     document.addEventListener('contextmenu', (e) => e.preventDefault())
 
-    // Verificação inicial — se já está em fullscreen, mantém true sem delay
+    // Se o browser não suporta Fullscreen API (iOS Safari, maioria dos mobiles)
+    // ou se é um dispositivo touch — não exige fullscreen, libera direto
+    const suportaFullscreen = !!(
+      document.documentElement.requestFullscreen ||
+      (document.documentElement as any).webkitRequestFullscreen ||
+      (document.documentElement as any).mozRequestFullScreen
+    )
+    const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+
+    if (!suportaFullscreen || isMobile) {
+      setEmFullscreen(true)
+      return
+    }
+
+    // Desktop com suporte: verificação inicial
     if (!estaEmFullscreen()) {
-      // Primeira vez sem fullscreen: mostra guard após delay curto
       guardTimerRef.current = setTimeout(() => {
         if (!estaEmFullscreen()) setEmFullscreen(false)
       }, 800)
