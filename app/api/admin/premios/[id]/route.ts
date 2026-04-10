@@ -48,6 +48,8 @@ export async function DELETE(
 ): Promise<NextResponse> {
   try {
     const supabase = createServiceClient()
+    // Zera referências em sessoes antes de deletar (evita FK constraint)
+    await supabase.from('sessoes').update({ premio_id: null }).eq('premio_id', params.id)
     const { error } = await supabase.from('premios').delete().eq('id', params.id)
     if (error) return NextResponse.json({ error: 'Erro ao excluir prêmio.' }, { status: 500 })
     return NextResponse.json({ ok: true })

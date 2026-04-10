@@ -190,9 +190,16 @@ export default function RoletaPage() {
         </div>
 
         {premios.length === 0 ? (
-          <div className="relative z-10 text-center animate-fade-in">
-            <div className="text-6xl mb-4">😔</div>
-            <p className="text-white text-xl">Nenhum prêmio disponível no momento.</p>
+          <div className="relative z-10 text-center animate-fade-in space-y-6">
+            <div className="text-7xl">😔</div>
+            <p className="text-white text-xl font-semibold">Nenhum prêmio disponível no momento.</p>
+            <p className="text-gray-400 text-base">Os prêmios serão repostos em breve!</p>
+            <button
+              onClick={() => router.push('/')}
+              className="mt-4 px-12 py-4 rounded-2xl bg-primary hover:bg-primary-hover text-white font-black text-xl shadow-lg shadow-primary/30 transition-all active:scale-95"
+            >
+              Jogar novamente
+            </button>
           </div>
         ) : (
           <div className="relative z-10">

@@ -23,6 +23,7 @@ export default function AdminPremiosPage() {
   const [form, setForm] = useState<PremioForm>(formVazio)
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
+  const [confirmandoExcluir, setConfirmandoExcluir] = useState<string | null>(null)
 
   const carregar = async () => {
     setLoading(true)
@@ -84,11 +85,11 @@ export default function AdminPremiosPage() {
     carregar()
   }
 
-  const handleExcluir = async (id: string, nome: string) => {
-    if (!confirm(`Excluir o prêmio "${nome}"? Esta ação é irreversível.`)) return
-    setPremios((prev) => prev.filter((p) => p.id !== id))
+  const handleExcluir = async (id: string) => {
     const res = await fetch(`/api/admin/premios/${id}`, { method: 'DELETE' })
-    if (!res.ok) carregar()
+    setConfirmandoExcluir(null)
+    if (res.ok) setPremios((prev) => prev.filter((p) => p.id !== id))
+    else carregar()
   }
 
   const setField = (campo: keyof PremioForm, valor: string | boolean) => {
@@ -161,12 +162,32 @@ export default function AdminPremiosPage() {
                       >
                         Editar
                       </button>
-                      <button
-                        onClick={() => handleExcluir(p.id, p.nome)}
-                        className="px-4 py-1.5 rounded-lg bg-red-50 text-red-600 text-sm font-semibold hover:bg-red-100 transition-colors"
-                      >
-                        Excluir
-                      </button>
+                      {confirmandoExcluir === p.id ? (
+                        <div className="flex flex-col gap-1">
+                          <span className="text-xs text-red-600 font-semibold text-center">Confirmar?</span>
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => handleExcluir(p.id)}
+                              className="flex-1 px-2 py-1 rounded-lg bg-red-600 text-white text-xs font-bold hover:bg-red-700 transition-colors"
+                            >
+                              Sim
+                            </button>
+                            <button
+                              onClick={() => setConfirmandoExcluir(null)}
+                              className="flex-1 px-2 py-1 rounded-lg border border-gray-300 text-gray-600 text-xs font-bold hover:bg-gray-50 transition-colors"
+                            >
+                              Não
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setConfirmandoExcluir(p.id)}
+                          className="px-4 py-1.5 rounded-lg bg-red-50 text-red-600 text-sm font-semibold hover:bg-red-100 transition-colors"
+                        >
+                          Excluir
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
