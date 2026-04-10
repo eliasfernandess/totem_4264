@@ -6,9 +6,10 @@ import { createClient } from '@/lib/supabase/client'
 import { clsx } from 'clsx'
 
 const links = [
-  { href: '/admin/leads', label: 'Leads' },
+  { href: '/admin/configuracoes', label: '⚙️ Configurações' },
   { href: '/admin/quiz', label: 'Quiz' },
   { href: '/admin/premios', label: 'Prêmios' },
+  { href: '/admin/historico', label: 'Histórico' },
 ]
 
 export function AdminNav() {

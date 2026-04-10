@@ -3,7 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 import type { Premio, SessionState } from '@/types'
 
 interface SessionStore extends SessionState {
-  setLead: (leadId: string, nome: string) => void
+  iniciarSessao: (sessaoId: string) => void
   setQuizCompleto: (acertos: number, totalPerguntas: number) => void
   setPremioSorteado: (premio: Premio) => void
   setEtapa: (etapa: SessionState['etapa']) => void
@@ -11,8 +11,7 @@ interface SessionStore extends SessionState {
 }
 
 const initialState: SessionState = {
-  leadId: null,
-  nome: null,
+  sessaoId: null,
   quizCompleto: false,
   premioSorteado: null,
   etapa: 'inicio',
@@ -25,8 +24,8 @@ export const useSessionStore = create<SessionStore>()(
     (set) => ({
       ...initialState,
 
-      setLead: (leadId, nome) =>
-        set({ leadId, nome, etapa: 'quiz' }),
+      iniciarSessao: (sessaoId) =>
+        set({ sessaoId, etapa: 'quiz' }),
 
       setQuizCompleto: (acertos, totalPerguntas) =>
         set({ quizCompleto: true, etapa: 'roleta', acertos, totalPerguntas }),

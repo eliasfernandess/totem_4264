@@ -10,7 +10,7 @@ import type { Premio } from '@/types'
 
 export default function RoletaPage() {
   const router = useRouter()
-  const { leadId, setPremioSorteado, quizCompleto, acertos, totalPerguntas, nome } = useSessionStore()
+  const { sessaoId, setPremioSorteado, quizCompleto, acertos, totalPerguntas } = useSessionStore()
   const [premios, setPremios] = useState<Premio[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -19,24 +19,20 @@ export default function RoletaPage() {
     : 0
 
   useEffect(() => {
-    if (!leadId || !quizCompleto) {
+    if (!sessaoId || !quizCompleto) {
       router.replace('/')
       return
     }
-
     fetch(`/api/premios?t=${Date.now()}`, { cache: 'no-store' })
       .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data)) setPremios(data)
-      })
+      .then((data) => { if (Array.isArray(data)) setPremios(data) })
       .finally(() => setLoading(false))
-  }, [leadId, quizCompleto, acertos, totalPerguntas, router])
+  }, [sessaoId, quizCompleto, router])
 
-  // Chamado apenas após a animação terminar — sem chamada API aqui
+  // Chamado apenas após a animação — sem chamada extra à API aqui
   const handleSorteio = useCallback(
     (premio: Premio) => {
       setPremioSorteado(premio)
-
       if (typeof window !== 'undefined') {
         import('canvas-confetti').then(({ default: confetti }) => {
           confetti({ particleCount: 250, spread: 90, origin: { y: 0.5 }, colors: ['#00AE9D', '#003641', '#7DB61C', '#C9D200', '#49479D'] })
@@ -44,9 +40,7 @@ export default function RoletaPage() {
             confetti({ particleCount: 120, angle: 60, spread: 60, origin: { x: 0 } })
             confetti({ particleCount: 120, angle: 120, spread: 60, origin: { x: 1 } })
           }, 400)
-          setTimeout(() => {
-            confetti({ particleCount: 80, spread: 120, origin: { y: 0.3 } })
-          }, 800)
+          setTimeout(() => confetti({ particleCount: 80, spread: 120, origin: { y: 0.3 } }), 800)
         })
       }
     },
@@ -60,17 +54,13 @@ export default function RoletaPage() {
 
   // Único ponto de chamada da API sortear
   const handleGirar = useCallback(async () => {
-    if (!leadId || premios.length === 0 || girando) return
+    if (!sessaoId || premios.length === 0 || girando) return
 
     try {
       const res = await fetch('/api/premios/sortear', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          lead_id: leadId,
-          acertos,
-          total_perguntas: totalPerguntas,
-        }),
+        body: JSON.stringify({ sessao_id: sessaoId, acertos, total_perguntas: totalPerguntas }),
       })
       const data = await res.json()
       if (data.premio) {
@@ -78,10 +68,10 @@ export default function RoletaPage() {
         return
       }
     } catch {
-      // fallback para sorteio local
+      // fallback local
     }
     girar()
-  }, [leadId, premios, girando, acertos, totalPerguntas, girar])
+  }, [sessaoId, premios, girando, acertos, totalPerguntas, girar])
 
   if (loading) {
     return (
@@ -91,35 +81,28 @@ export default function RoletaPage() {
     )
   }
 
-  // Tela de vitória — aparece após o prêmio ser sorteado
+  // ── Tela de vitória ──────────────────────────────────────────────
   if (premioSorteado) {
     return (
       <div className="kiosk-scroll">
         <InactivityReset />
         <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden bg-gradient-to-br from-[#001a22] via-secondary to-[#003641]">
-          {/* Elementos decorativos de fundo */}
           <div className="absolute inset-0 pointer-events-none">
             <div className="absolute top-[-10%] left-[-10%] w-96 h-96 rounded-full bg-primary/10 blur-3xl" />
             <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 rounded-full bg-[#7DB61C]/10 blur-3xl" />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/5 blur-3xl" />
           </div>
 
           <div className="relative z-10 flex flex-col items-center px-8 py-12 text-center max-w-2xl mx-auto">
-            {/* Troféu animado */}
             <div className="relative mb-6 animate-bounce-slow">
               <div className="text-[100px] leading-none filter drop-shadow-2xl">🏆</div>
               <div className="absolute -top-2 -right-2 text-4xl animate-spin-slow">⭐</div>
               <div className="absolute -bottom-2 -left-2 text-3xl animate-spin-slow" style={{ animationDirection: 'reverse' }}>✨</div>
             </div>
 
-            {/* Parabéns */}
-            <h1 className="text-6xl font-black text-white font-display mb-2 animate-fade-in"
+            <h1 className="text-6xl font-black text-white font-display mb-6 animate-fade-in"
               style={{ textShadow: '0 0 40px rgba(0,174,157,0.6)' }}>
               PARABÉNS!
             </h1>
-            {nome && (
-              <p className="text-2xl text-primary font-bold mb-6 animate-fade-in">{nome}!</p>
-            )}
 
             {/* Resultado do quiz */}
             <div className="flex items-center gap-4 mb-8 animate-slide-up">
@@ -133,7 +116,7 @@ export default function RoletaPage() {
               </div>
             </div>
 
-            {/* Prêmio ganho */}
+            {/* Prêmio */}
             <div className="w-full bg-gradient-to-r from-primary/30 to-[#7DB61C]/20 rounded-3xl p-6 border-2 border-primary/50 mb-6 animate-slide-up shadow-2xl shadow-primary/20">
               <p className="text-gray-300 text-lg mb-2">Você ganhou:</p>
               <p className="text-5xl font-black text-white font-display mb-2"
@@ -156,12 +139,11 @@ export default function RoletaPage() {
               </div>
             </div>
 
-            {/* Botão de reinício */}
             <button
               onClick={() => router.push('/')}
               className="px-10 py-4 rounded-2xl border-2 border-white/30 text-white font-semibold text-lg hover:bg-white/10 transition-all"
             >
-              Finalizar e jogar novamente
+              Jogar novamente
             </button>
           </div>
         </div>
@@ -169,11 +151,11 @@ export default function RoletaPage() {
     )
   }
 
+  // ── Tela da roleta ──────────────────────────────────────────────
   return (
     <div className="kiosk-scroll">
       <InactivityReset />
       <div className="min-h-screen flex flex-col items-center justify-center px-8 py-16 bg-gradient-to-br from-secondary via-secondary to-[#001f28] relative">
-        {/* Header */}
         <div className="text-center mb-8 animate-fade-in">
           <h1 className="text-4xl font-black text-white font-display">🎡 Hora da Sorte!</h1>
           <p className="text-gray-300 text-xl mt-2">Toque no botão e gire a roleta!</p>
@@ -185,9 +167,7 @@ export default function RoletaPage() {
         </div>
 
         {premios.length === 0 ? (
-          <div className="text-center space-y-4">
-            <p className="text-white text-xl">Nenhum prêmio disponível para o seu desempenho no momento.</p>
-          </div>
+          <p className="text-white text-xl text-center">Nenhum prêmio disponível no momento.</p>
         ) : (
           <Roleta
             premios={premios}

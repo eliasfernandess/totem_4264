@@ -11,57 +11,44 @@ const MAX_PERGUNTAS = 8
 
 export default function QuizPage() {
   const router = useRouter()
-  const { leadId, setQuizCompleto, resetSession } = useSessionStore()
+  const { sessaoId, setQuizCompleto, resetSession } = useSessionStore()
   const [perguntas, setPerguntas] = useState<Pergunta[]>([])
   const [indicePergunta, setIndicePergunta] = useState(0)
   const [acertos, setAcertos] = useState(0)
   const [loading, setLoading] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (!leadId) {
-      router.replace('/')
-      return
-    }
-
+  const carregarPerguntas = useCallback(() => {
+    setLoading(true)
+    setErro(null)
     fetch(`/api/perguntas?t=${Date.now()}`, { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
         if (data.error) throw new Error(data.error)
-        if (!Array.isArray(data)) throw new Error('Resposta inválida da API')
-        // Limitar a MAX_PERGUNTAS, já embaralhadas pela API
+        if (!Array.isArray(data)) throw new Error('Resposta inválida')
         setPerguntas(data.slice(0, MAX_PERGUNTAS))
       })
       .catch(() => setErro('Erro ao carregar perguntas. Tente novamente.'))
       .finally(() => setLoading(false))
-  }, [leadId, router])
+  }, [])
+
+  useEffect(() => {
+    if (!sessaoId) {
+      router.replace('/')
+      return
+    }
+    carregarPerguntas()
+  }, [sessaoId, router, carregarPerguntas])
 
   const handleResponder = useCallback(
     async (respostaId: string, correta: boolean) => {
       const perguntaAtual = perguntas[indicePergunta]
-      if (!perguntaAtual || !leadId) return
-
-      if (correta) {
-        setAcertos((prev) => prev + 1)
-      }
-
-      try {
-        await fetch('/api/respostas-usuario', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            lead_id: leadId,
-            pergunta_id: perguntaAtual.id,
-            resposta_id: respostaId,
-          }),
-        })
-      } catch {
-        // Continua mesmo com erro de rede
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      if (!perguntaAtual) return
 
       const novoAcertos = correta ? acertos + 1 : acertos
+      if (correta) setAcertos(novoAcertos)
+
+      await new Promise((resolve) => setTimeout(resolve, 1500))
 
       if (indicePergunta + 1 >= perguntas.length) {
         setQuizCompleto(novoAcertos, perguntas.length)
@@ -70,7 +57,7 @@ export default function QuizPage() {
         setIndicePergunta((prev) => prev + 1)
       }
     },
-    [perguntas, indicePergunta, leadId, acertos, setQuizCompleto, router]
+    [perguntas, indicePergunta, acertos, setQuizCompleto, router]
   )
 
   if (loading) {
@@ -78,7 +65,7 @@ export default function QuizPage() {
       <div className="min-h-screen flex items-center justify-center bg-secondary">
         <div className="text-center space-y-4">
           <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-white text-xl">Carregando perguntas...</p>
+          <p className="text-white text-xl">Carregando quiz...</p>
         </div>
       </div>
     )
@@ -89,43 +76,35 @@ export default function QuizPage() {
       <div className="min-h-screen flex items-center justify-center bg-secondary">
         <div className="text-center space-y-6 p-8">
           <p className="text-white text-2xl">{erro ?? 'Nenhuma pergunta disponível.'}</p>
-          <button
-            onClick={() => {
-              if (erro) {
-                setErro(null)
-                setLoading(true)
-                fetch(`/api/perguntas?t=${Date.now()}`, { cache: 'no-store' })
-                  .then((res) => res.json())
-                  .then((data) => {
-                    if (data.error) throw new Error(data.error)
-                    if (!Array.isArray(data)) throw new Error('Resposta inválida')
-                    setPerguntas(data.slice(0, MAX_PERGUNTAS))
-                  })
-                  .catch(() => setErro('Erro ao carregar perguntas. Tente novamente.'))
-                  .finally(() => setLoading(false))
-              } else {
+          <div className="flex gap-4 justify-center">
+            <button
+              onClick={carregarPerguntas}
+              className="bg-primary text-white px-8 py-4 rounded-2xl text-xl font-semibold"
+            >
+              Tentar novamente
+            </button>
+            <button
+              onClick={() => {
                 setQuizCompleto(0, 0)
                 router.push('/roleta')
-              }
-            }}
-            className="bg-primary text-white px-8 py-4 rounded-2xl text-xl font-semibold"
-          >
-            {erro ? 'Tentar novamente' : 'Ir para a roleta'}
-          </button>
+              }}
+              className="bg-white/10 border border-white/30 text-white px-8 py-4 rounded-2xl text-xl font-semibold"
+            >
+              Pular para a roleta
+            </button>
+          </div>
         </div>
       </div>
     )
   }
 
   const perguntaAtual = perguntas[indicePergunta]
-  const percentualAcertos = perguntas.length > 0
-    ? Math.round((acertos / Math.max(indicePergunta, 1)) * 100)
-    : 0
 
   return (
     <div className="kiosk-scroll">
       <InactivityReset />
       <div className="min-h-screen flex flex-col items-center justify-center px-8 py-16 bg-gradient-to-br from-secondary via-secondary to-[#001f28]">
+
         {/* Header com placar */}
         <div className="text-center mb-8 animate-fade-in w-full max-w-2xl">
           <div className="flex items-center justify-between mb-4">
@@ -140,17 +119,16 @@ export default function QuizPage() {
               <h1 className="text-2xl font-black text-white font-display">Quiz</h1>
             </div>
 
-            {/* Placar de acertos */}
+            {/* Placar ao vivo */}
             {indicePergunta > 0 && (
               <div className="flex items-center gap-3">
-                <div className="text-center">
-                  <div className="text-3xl font-black text-primary">{acertos}</div>
-                  <div className="text-xs text-gray-400">acertos</div>
+                <div className="flex items-center gap-1.5 bg-green-500/20 border border-green-500/30 rounded-xl px-3 py-1.5">
+                  <span className="text-2xl font-black text-green-400">{acertos}</span>
+                  <span className="text-green-300 text-xs">acertos</span>
                 </div>
-                <div className="text-gray-500 text-xl">/</div>
-                <div className="text-center">
-                  <div className="text-3xl font-black text-gray-300">{indicePergunta}</div>
-                  <div className="text-xs text-gray-400">perguntas</div>
+                <div className="flex items-center gap-1.5 bg-red-500/20 border border-red-500/30 rounded-xl px-3 py-1.5">
+                  <span className="text-2xl font-black text-red-400">{indicePergunta - acertos}</span>
+                  <span className="text-red-300 text-xs">erros</span>
                 </div>
               </div>
             )}

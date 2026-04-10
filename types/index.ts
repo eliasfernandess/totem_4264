@@ -31,6 +31,24 @@ export interface Premio {
   percentual_acerto: number
 }
 
+export interface Sessao {
+  id: string
+  acertos: number
+  total_perguntas: number
+  premio_id: string | null
+  created_at: string
+  premios?: Premio
+}
+
+export interface Configuracao {
+  id: number
+  sistema_ativo: boolean
+  dia_inteiro: boolean
+  horario_inicio: string // "HH:MM:SS"
+  horario_fim: string    // "HH:MM:SS"
+  updated_at: string
+}
+
 export interface RespostaUsuario {
   id: string
   lead_id: string
@@ -47,11 +65,10 @@ export interface PremioUsuario {
 }
 
 export interface SessionState {
-  leadId: string | null
-  nome: string | null
+  sessaoId: string | null
   quizCompleto: boolean
   premioSorteado: Premio | null
-  etapa: 'inicio' | 'credenciamento' | 'quiz' | 'roleta' | 'fim'
+  etapa: 'inicio' | 'quiz' | 'roleta' | 'fim'
   acertos: number
   totalPerguntas: number
 }
