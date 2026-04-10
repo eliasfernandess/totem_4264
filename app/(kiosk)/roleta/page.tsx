@@ -153,26 +153,6 @@ export default function RoletaPage() {
               )}
             </div>
 
-            {/* Chamada foto */}
-            <div
-              className="w-full rounded-2xl px-6 py-5 mb-8 animate-pulse-subtle border-2"
-              style={{
-                animationDelay: '0.9s',
-                background: 'linear-gradient(135deg, rgba(234,179,8,0.2), rgba(234,179,8,0.1))',
-                borderColor: 'rgba(234,179,8,0.5)',
-              }}
-            >
-              <div className="flex items-center justify-center gap-4">
-                <span className="text-4xl">📸</span>
-                <div className="text-left">
-                  <p className="text-yellow-300 font-black text-xl">TIRE UMA FOTO DESTA TELA!</p>
-                  <p className="text-yellow-200/80 text-sm mt-0.5">
-                    Apresente ao atendente para retirar seu prêmio
-                  </p>
-                </div>
-              </div>
-            </div>
-
             <button
               onClick={() => router.push('/')}
               className="px-12 py-4 rounded-2xl border-2 border-white/30 text-white font-semibold text-lg hover:bg-white/10 transition-all active:scale-95"
