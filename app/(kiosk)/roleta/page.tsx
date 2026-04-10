@@ -11,7 +11,7 @@ import type { Premio } from '@/types'
 
 export default function RoletaPage() {
   const router = useRouter()
-  const { sessaoId, setPremioSorteado, quizCompleto, acertos, totalPerguntas } = useSessionStore()
+  const { sessaoId, setPremioSorteado, quizCompleto, acertos, totalPerguntas, resetSession } = useSessionStore()
   const [premios, setPremios] = useState<Premio[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -154,7 +154,7 @@ export default function RoletaPage() {
             </div>
 
             <button
-              onClick={() => router.push('/')}
+              onClick={() => { resetSession(); router.push('/') }}
               className="px-12 py-4 rounded-2xl border-2 border-white/30 text-white font-semibold text-lg hover:bg-white/10 transition-all active:scale-95"
             >
               Jogar novamente
@@ -195,7 +195,7 @@ export default function RoletaPage() {
             <p className="text-white text-xl font-semibold">Nenhum prêmio disponível no momento.</p>
             <p className="text-gray-400 text-base">Os prêmios serão repostos em breve!</p>
             <button
-              onClick={() => router.push('/')}
+              onClick={() => { resetSession(); router.push('/') }}
               className="mt-4 px-12 py-4 rounded-2xl bg-primary hover:bg-primary-hover text-white font-black text-xl shadow-lg shadow-primary/30 transition-all active:scale-95"
             >
               Jogar novamente
