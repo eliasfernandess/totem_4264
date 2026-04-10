@@ -17,20 +17,6 @@ export function AnimatedBackground() {
       <div className="animate-float1 absolute top-1/2 left-1/2 w-[700px] h-[700px] rounded-full blur-3xl"
         style={{ transform: 'translate(-50%, -50%)', background: 'radial-gradient(circle, rgba(0,174,157,0.08) 0%, transparent 60%)', animationDelay: '6s' }} />
 
-      {/* ── Anéis pulsantes concêntricos ─────────────────────────── */}
-      {[0, 1.5, 3].map((delay) => (
-        <div key={delay}
-          className="animate-expand-ring absolute rounded-full border"
-          style={{
-            top: '50%', left: '50%',
-            width: '300px', height: '300px',
-            marginLeft: '-150px', marginTop: '-150px',
-            borderColor: 'rgba(0,174,157,0.25)',
-            animationDelay: `${delay}s`,
-          }}
-        />
-      ))}
-
       {/* ── Partículas coloridas flutuando para cima ──────────────── */}
       {PARTICLES.map((p, i) => (
         <div key={i}
