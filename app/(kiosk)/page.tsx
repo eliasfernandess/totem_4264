@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSessionStore } from '@/store/sessionStore'
 import { InactivityReset } from '@/components/kiosk/InactivityReset'
+import { AnimatedBackground } from '@/components/kiosk/AnimatedBackground'
 import type { Configuracao } from '@/types'
 
 function gerarUUID(): string {
@@ -26,12 +27,8 @@ function dentroDoHorario(config: Configuracao): boolean {
   const inicio = config.horario_inicio.slice(0, 5)
   const fim = config.horario_fim.slice(0, 5)
 
-  // Suporta virada de meia-noite (ex: 22:00 até 02:00)
-  if (inicio <= fim) {
-    return horaAtual >= inicio && horaAtual <= fim
-  } else {
-    return horaAtual >= inicio || horaAtual <= fim
-  }
+  if (inicio <= fim) return horaAtual >= inicio && horaAtual <= fim
+  return horaAtual >= inicio || horaAtual <= fim
 }
 
 export default function TelaInicial() {
@@ -40,24 +37,18 @@ export default function TelaInicial() {
   const [config, setConfig] = useState<Configuracao | null>(null)
   const [verificado, setVerificado] = useState(false)
 
-  // Verifica configuração de horário
   useEffect(() => {
     const verificar = () => {
       fetch(`/api/configuracoes?t=${Date.now()}`, { cache: 'no-store' })
         .then((res) => res.json())
-        .then((data: Configuracao) => {
-          setConfig(data)
-          setVerificado(true)
-        })
-        .catch(() => setVerificado(true)) // em erro, não bloqueia
+        .then((data: Configuracao) => { setConfig(data); setVerificado(true) })
+        .catch(() => setVerificado(true))
     }
-
     verificar()
     const intervalo = setInterval(verificar, 60_000)
     return () => clearInterval(intervalo)
   }, [])
 
-  // Retoma sessão em andamento (ignora bloqueio de horário — sessão já iniciada)
   useEffect(() => {
     if (!verificado) return
     if (sessaoId && etapa === 'quiz') router.replace('/quiz')
@@ -71,7 +62,6 @@ export default function TelaInicial() {
     router.push('/quiz')
   }
 
-  // Aguarda verificação
   if (!verificado) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-secondary">
@@ -80,34 +70,22 @@ export default function TelaInicial() {
     )
   }
 
-  // Bloqueio de horário — só na splash, nunca durante uma sessão ativa
   const bloqueado = config && !dentroDoHorario(config)
 
   if (bloqueado) {
     const horaAbertura = config.horario_inicio.slice(0, 5)
     const horaEncerramento = config.horario_fim.slice(0, 5)
-
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-secondary via-secondary to-[#001f28] relative">
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-          <div className="absolute bottom-0 left-0 w-72 h-72 bg-primary/5 rounded-full translate-y-1/2 -translate-x-1/2" />
-        </div>
-
-        <div className="relative z-10 text-center px-8 max-w-lg animate-fade-in">
-          <div className="text-8xl mb-8">
-            {config.sistema_ativo ? '🕐' : '🔒'}
-          </div>
-
+        <AnimatedBackground />
+        <div className="relative z-10 text-center px-8 max-w-lg animate-scale-in">
+          <div className="text-8xl mb-8">{config.sistema_ativo ? '🕐' : '🔒'}</div>
           <h1 className="text-5xl font-black text-white mb-4 font-display">
             {config.sistema_ativo ? 'Fora do Horário' : 'Sistema Pausado'}
           </h1>
-
           {config.sistema_ativo ? (
             <>
-              <p className="text-xl text-gray-300 mb-6 leading-relaxed">
-                O totem está disponível das
-              </p>
+              <p className="text-xl text-gray-300 mb-6">O totem está disponível das</p>
               <div className="flex items-center justify-center gap-4 mb-8">
                 <div className="bg-white/10 border border-white/20 rounded-2xl px-8 py-4">
                   <div className="text-4xl font-black text-primary">{horaAbertura}</div>
@@ -132,64 +110,77 @@ export default function TelaInicial() {
     )
   }
 
-  // Tela normal de entrada
   return (
     <div className="kiosk-scroll">
       <InactivityReset />
-      <div className="min-h-screen flex flex-col items-center justify-center px-8 py-16 bg-gradient-to-br from-secondary via-secondary to-[#001f28] relative">
+      <div className="min-h-screen flex flex-col items-center justify-center px-8 py-16 relative overflow-hidden"
+        style={{ background: 'linear-gradient(135deg, #001f28 0%, #003641 40%, #004d5c 70%, #001f28 100%)' }}>
 
-        {/* Decoração */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-          <div className="absolute bottom-0 left-0 w-72 h-72 bg-accent/5 rounded-full translate-y-1/2 -translate-x-1/2" />
-        </div>
+        <AnimatedBackground />
 
-        {/* Logo */}
-        <div className="mb-12 animate-fade-in relative z-10">
-          <div className="w-32 h-32 rounded-full bg-primary flex items-center justify-center shadow-2xl shadow-primary/40">
-            <svg className="w-16 h-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
-              />
-            </svg>
+        {/* Logo com anel pulsante */}
+        <div className="mb-10 animate-scale-in relative z-10" style={{ animationDelay: '0s' }}>
+          <div className="relative">
+            <div className="absolute inset-0 rounded-full bg-primary/30 animate-pulse-ring" />
+            <div className="w-28 h-28 rounded-full bg-gradient-to-br from-primary to-[#008C7E] flex items-center justify-center shadow-2xl shadow-primary/50 relative z-10">
+              <svg className="w-14 h-14 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                  d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                />
+              </svg>
+            </div>
           </div>
         </div>
 
-        {/* Título */}
-        <div className="text-center mb-12 animate-slide-up relative z-10">
-          <h1 className="text-6xl font-black text-white mb-4 font-display leading-tight">
-            Bem-vindo ao<br />
-            <span className="text-primary">Totem Interativo</span>
+        {/* Título com shimmer */}
+        <div className="text-center mb-10 relative z-10" style={{ animation: 'slideUp 0.5s 0.1s ease-out both' }}>
+          <h1 className="text-6xl font-black text-white mb-3 font-display leading-tight">
+            Bem-vindo ao
           </h1>
-          <p className="text-2xl text-gray-300 max-w-lg mx-auto leading-relaxed">
-            Responda o quiz, gire a roleta e ganhe prêmios!
+          <h1 className="text-6xl font-black font-display leading-tight animate-shimmer"
+            style={{ color: '#00AE9D' }}>
+            Totem Interativo
+          </h1>
+          <p className="text-xl text-gray-300 mt-4 max-w-md mx-auto leading-relaxed">
+            Responda o quiz, gire a roleta e ganhe prêmios incríveis!
           </p>
         </div>
 
-        {/* Passos */}
-        <div className="flex gap-8 mb-16 animate-slide-up relative z-10">
+        {/* Passos com animação escalonada */}
+        <div className="flex gap-6 mb-12 relative z-10">
           {[
-            { num: '1', label: 'Responda o Quiz', icon: '🧠' },
-            { num: '2', label: 'Gire a Roleta', icon: '🎡' },
-            { num: '3', label: 'Ganhe Prêmios!', icon: '🏆' },
-          ].map((step) => (
-            <div key={step.num} className="flex flex-col items-center gap-3 text-center">
-              <div className="w-16 h-16 rounded-full bg-primary/20 border-2 border-primary flex items-center justify-center text-2xl">
+            { label: 'Responda o Quiz', icon: '🧠', color: 'from-primary/30 to-primary/10', border: 'border-primary/40', delay: '0.2s' },
+            { label: 'Gire a Roleta',   icon: '🎡', color: 'from-[#7DB61C]/30 to-[#7DB61C]/10', border: 'border-[#7DB61C]/40', delay: '0.35s' },
+            { label: 'Ganhe Prêmios!',  icon: '🏆', color: 'from-[#49479D]/30 to-[#49479D]/10', border: 'border-[#49479D]/40', delay: '0.5s' },
+          ].map((step, i) => (
+            <div
+              key={i}
+              className={`flex flex-col items-center gap-3 text-center bg-gradient-to-b ${step.color} border ${step.border} rounded-2xl px-6 py-5`}
+              style={{ animation: `slideUp 0.5s ${step.delay} ease-out both` }}
+            >
+              <div className="text-4xl animate-bounce-slow" style={{ animationDelay: `${i * 0.4}s` }}>
                 {step.icon}
               </div>
-              <span className="text-white font-semibold text-lg">{step.label}</span>
+              <span className="text-white font-semibold text-base">{step.label}</span>
             </div>
           ))}
         </div>
 
-        {/* CTA */}
-        <div className="animate-slide-up relative z-10">
-          <button
-            onClick={handleJogar}
-            className="bg-primary hover:bg-primary-hover text-white text-2xl font-black px-20 py-6 rounded-2xl shadow-2xl shadow-primary/40 transition-all active:scale-95"
-          >
-            Toque para Jogar!
-          </button>
+        {/* CTA com pulso */}
+        <div className="relative z-10" style={{ animation: 'slideUp 0.5s 0.6s ease-out both' }}>
+          <div className="relative">
+            <div className="absolute inset-0 rounded-2xl animate-pulse-ring" />
+            <button
+              onClick={handleJogar}
+              className="relative z-10 text-white text-2xl font-black px-24 py-7 rounded-2xl shadow-2xl shadow-primary/50 transition-all active:scale-95 animate-gradient"
+              style={{ background: 'linear-gradient(135deg, #00AE9D, #008C7E, #00AE9D)' }}
+            >
+              Toque para Jogar!
+            </button>
+          </div>
+          <p className="text-center text-gray-500 text-sm mt-4 animate-pulse">
+            ✦ Toque na tela para começar ✦
+          </p>
         </div>
       </div>
     </div>

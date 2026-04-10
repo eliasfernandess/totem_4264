@@ -17,7 +17,7 @@ export default function AdminConfiguracoesPage() {
   const [horaFim, setHoraFim] = useState('18:00')
 
   useEffect(() => {
-    fetch('/api/admin/configuracoes')
+    fetch(`/api/admin/configuracoes?t=${Date.now()}`, { cache: 'no-store' })
       .then((r) => r.json())
       .then((data: Configuracao) => {
         setConfig(data)

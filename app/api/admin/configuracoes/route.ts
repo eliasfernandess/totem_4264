@@ -20,13 +20,14 @@ export async function GET(): Promise<NextResponse> {
       .eq('id', 1)
       .single()
 
+    const headers = { 'Cache-Control': 'no-store, no-cache', 'Pragma': 'no-cache' }
     if (error || !data) {
       return NextResponse.json({
         id: 1, sistema_ativo: true, dia_inteiro: true,
         horario_inicio: '08:00', horario_fim: '18:00',
-      })
+      }, { headers })
     }
-    return NextResponse.json(data)
+    return NextResponse.json(data, { headers })
   } catch {
     return NextResponse.json({ error: 'Erro interno.' }, { status: 500 })
   }
