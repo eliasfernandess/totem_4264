@@ -1,9 +1,11 @@
 'use client'
 
-import { useEffect, useCallback, useState } from 'react'
+import { useEffect, useCallback, useState, useRef } from 'react'
 
 export function useKioskFullscreen() {
-  const [emFullscreen, setEmFullscreen] = useState(false)
+  // Começa como true (otimista) — evita flash do guard no mount/navegação
+  const [emFullscreen, setEmFullscreen] = useState(true)
+  const guardTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const entrarFullscreen = useCallback(async () => {
     const el = document.documentElement as HTMLElement & {
@@ -14,14 +16,31 @@ export function useKioskFullscreen() {
       if (el.requestFullscreen) await el.requestFullscreen()
       else if (el.webkitRequestFullscreen) await el.webkitRequestFullscreen()
       else if (el.mozRequestFullScreen) await el.mozRequestFullScreen()
-    } catch { /* ignorado — sem gesto do usuário */ }
+    } catch { /* sem gesto do usuário — ignorado */ }
   }, [])
 
   useEffect(() => {
+    const estaEmFullscreen = () =>
+      !!(document.fullscreenElement || (document as any).webkitFullscreenElement)
+
     const verificar = () => {
-      const esta = !!(document.fullscreenElement || (document as any).webkitFullscreenElement)
-      setEmFullscreen(esta)
-      if (!esta) setTimeout(() => entrarFullscreen(), 300)
+      const esta = estaEmFullscreen()
+
+      if (esta) {
+        // Entrou em fullscreen — cancela qualquer timer pendente e libera
+        if (guardTimerRef.current) clearTimeout(guardTimerRef.current)
+        setEmFullscreen(true)
+        return
+      }
+
+      // Saiu do fullscreen — tenta re-entrar imediatamente (funciona quando há gesto)
+      entrarFullscreen()
+
+      // Aguarda 1.5s para ver se re-entrou (ex: transição de rota) antes de mostrar o guard
+      if (guardTimerRef.current) clearTimeout(guardTimerRef.current)
+      guardTimerRef.current = setTimeout(() => {
+        if (!estaEmFullscreen()) setEmFullscreen(false)
+      }, 1500)
     }
 
     const bloquearTeclas = (e: KeyboardEvent) => {
@@ -38,12 +57,20 @@ export function useKioskFullscreen() {
     document.addEventListener('webkitfullscreenchange', verificar)
     document.addEventListener('keydown', bloquearTeclas, true)
     document.addEventListener('contextmenu', (e) => e.preventDefault())
-    verificar()
+
+    // Verificação inicial — se já está em fullscreen, mantém true sem delay
+    if (!estaEmFullscreen()) {
+      // Primeira vez sem fullscreen: mostra guard após delay curto
+      guardTimerRef.current = setTimeout(() => {
+        if (!estaEmFullscreen()) setEmFullscreen(false)
+      }, 800)
+    }
 
     return () => {
       document.removeEventListener('fullscreenchange', verificar)
       document.removeEventListener('webkitfullscreenchange', verificar)
       document.removeEventListener('keydown', bloquearTeclas, true)
+      if (guardTimerRef.current) clearTimeout(guardTimerRef.current)
     }
   }, [entrarFullscreen])
 
