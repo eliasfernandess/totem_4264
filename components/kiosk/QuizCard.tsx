@@ -19,74 +19,61 @@ export function QuizCard({ pergunta, numero, total, acertos, onResponder }: Quiz
 
   const handleResposta = async (resposta: Resposta) => {
     if (respondida || loading) return
-
     setSelecionada(resposta.id)
     setRespondida(true)
     setLoading(true)
-
     await onResponder(resposta.id, resposta.correta)
     setLoading(false)
   }
 
   const getEstiloResposta = (resposta: Resposta) => {
-    if (!respondida) {
-      return 'border-gray-200 hover:border-primary hover:bg-primary/5 active:scale-98'
-    }
-    if (resposta.correta) return 'border-green-medium bg-green-medium/10 text-green-700'
-    if (resposta.id === selecionada) return 'border-red-400 bg-red-50 text-red-700'
-    return 'border-gray-200 opacity-50'
+    if (!respondida) return 'border-gray-200 hover:border-primary hover:bg-primary/5 active:scale-[0.98]'
+    if (resposta.correta) return 'border-green-400 bg-green-50 text-green-800'
+    if (resposta.id === selecionada) return 'border-red-400 bg-red-50 text-red-800'
+    return 'border-gray-200 opacity-40'
   }
 
   const respondeuCerto = respondida && pergunta.respostas.find((r) => r.id === selecionada)?.correta
 
   return (
-    <div className="w-full max-w-2xl mx-auto animate-slide-up">
-      <div className="mb-6">
-        {/* Barra de progresso + contadores */}
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-primary font-semibold text-lg">
-            Pergunta {numero} de {total}
-          </span>
-          <div className="flex items-center gap-3">
-            {/* Acertos */}
-            <div className="flex items-center gap-1.5 bg-green-50 px-3 py-1 rounded-full">
-              <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-              </svg>
-              <span className="text-green-700 font-bold text-sm">{acertos}</span>
-            </div>
-            {/* Erros */}
-            <div className="flex items-center gap-1.5 bg-red-50 px-3 py-1 rounded-full">
-              <svg className="w-4 h-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-              <span className="text-red-600 font-bold text-sm">{(numero - 1) - acertos}</span>
-            </div>
+    <div className="w-full animate-slide-up">
+      {/* Progresso e número */}
+      <div className="flex items-center justify-between mb-4">
+        <span className="text-primary font-bold text-xl">
+          Pergunta {numero} de {total}
+        </span>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 bg-green-50 px-3 py-1.5 rounded-full">
+            <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+            </svg>
+            <span className="text-green-700 font-bold text-base">{acertos}</span>
+          </div>
+          <div className="flex items-center gap-1.5 bg-red-50 px-3 py-1.5 rounded-full">
+            <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            <span className="text-red-600 font-bold text-base">{(numero - 1) - acertos}</span>
           </div>
         </div>
-
-        {/* Bolinhas de progresso */}
-        <div className="flex gap-1 mb-4">
-          {Array.from({ length: total }).map((_, i) => (
-            <div
-              key={i}
-              className={clsx(
-                'h-2 rounded-full transition-all duration-300',
-                i < numero - 1
-                  ? 'bg-primary w-6'
-                  : i === numero - 1
-                  ? 'bg-primary w-8'
-                  : 'bg-gray-200 w-6'
-              )}
-            />
-          ))}
-        </div>
-
-        <h2 className="text-2xl font-bold text-gray-900 leading-tight font-display">
-          {pergunta.pergunta}
-        </h2>
       </div>
 
+      {/* Bolinhas de progresso */}
+      <div className="flex gap-1.5 mb-6">
+        {Array.from({ length: total }).map((_, i) => (
+          <div key={i} className={clsx(
+            'h-2.5 rounded-full transition-all duration-300 flex-1',
+            i < numero - 1 ? 'bg-primary' : i === numero - 1 ? 'bg-primary' : 'bg-gray-200'
+          )} />
+        ))}
+      </div>
+
+      {/* Pergunta */}
+      <h2 className="text-3xl font-bold text-gray-900 leading-snug font-display mb-8">
+        {pergunta.pergunta}
+      </h2>
+
+      {/* Respostas */}
       <div className="space-y-4">
         {pergunta.respostas.map((resposta, idx) => (
           <button
@@ -94,22 +81,22 @@ export function QuizCard({ pergunta, numero, total, acertos, onResponder }: Quiz
             onClick={() => handleResposta(resposta)}
             disabled={respondida}
             className={clsx(
-              'w-full min-h-16 px-6 py-4 rounded-2xl border-2 text-left font-semibold text-lg text-gray-800',
+              'w-full min-h-[72px] px-6 py-5 rounded-2xl border-2 text-left font-semibold text-xl text-gray-800',
               'transition-all duration-300 flex items-center gap-4',
               getEstiloResposta(resposta)
             )}
           >
-            <span className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold flex-shrink-0">
+            <span className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black text-lg flex-shrink-0">
               {String.fromCharCode(65 + idx)}
             </span>
-            <span className="flex-1">{resposta.texto}</span>
+            <span className="flex-1 leading-snug">{resposta.texto}</span>
             {respondida && resposta.correta && (
-              <svg className="w-6 h-6 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-7 h-7 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
               </svg>
             )}
             {respondida && !resposta.correta && resposta.id === selecionada && (
-              <svg className="w-6 h-6 text-red-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-7 h-7 text-red-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
               </svg>
             )}
@@ -117,18 +104,17 @@ export function QuizCard({ pergunta, numero, total, acertos, onResponder }: Quiz
         ))}
       </div>
 
+      {/* Feedback */}
       {respondida && (
         <div className="mt-6 text-center">
           {loading ? (
-            <p className="text-gray-500 animate-pulse">Registrando resposta...</p>
+            <p className="text-gray-500 text-lg animate-pulse">Registrando resposta...</p>
           ) : (
             <p className={clsx(
-              'font-semibold animate-fade-in text-lg',
+              'font-bold animate-fade-in text-xl',
               respondeuCerto ? 'text-green-600' : 'text-red-500'
             )}>
-              {respondeuCerto
-                ? '✓ Correto! Muito bem!'
-                : '✗ Ops! A resposta correta está destacada.'}
+              {respondeuCerto ? '✓ Correto! Muito bem!' : '✗ Ops! A resposta correta está destacada.'}
             </p>
           )}
         </div>

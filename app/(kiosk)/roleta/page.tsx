@@ -57,40 +57,41 @@ export default function RoletaPage() {
       })
       const data = await res.json()
       if (data.premio) { girar(data.premio); return }
-    } catch { /* fallback local */ }
+    } catch { /* fallback */ }
     girar()
   }, [sessaoId, premios, girando, acertos, totalPerguntas, girar])
 
+  // ── Loading ──────────────────────────────────────────────────────
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-secondary relative overflow-hidden">
         <AnimatedBackground />
-        <div className="relative z-10 text-center space-y-4 animate-fade-in">
-          <div className="w-20 h-20 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-white text-2xl font-semibold">Preparando a roleta...</p>
+        <div className="relative z-10 text-center space-y-6 animate-fade-in">
+          <div className="w-24 h-24 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-white text-3xl font-semibold">Preparando a roleta...</p>
         </div>
       </div>
     )
   }
 
-  // ── Tela de vitória ──────────────────────────────────────────────────────────
+  // ── Tela de vitória ──────────────────────────────────────────────
   if (premioSorteado) {
     const medalha = percentualAcerto >= 80 ? '🥇' : percentualAcerto >= 50 ? '🥈' : '🥉'
     return (
       <div className="kiosk-scroll">
         <InactivityReset />
-        <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden"
-          style={{ background: 'linear-gradient(135deg, #001020 0%, #001f28 35%, #003030 65%, #001020 100%)' }}>
+        <div className="min-h-screen flex flex-col items-center justify-between px-8 py-12 relative overflow-hidden"
+          style={{ background: 'linear-gradient(180deg, #001020 0%, #001f28 35%, #003030 65%, #001020 100%)' }}>
 
           <AnimatedBackground />
 
-          {/* Raios de luz por trás */}
+          {/* Raios de luz */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
             {[0, 45, 90, 135, 180, 225, 270, 315].map((deg) => (
               <div key={deg}
-                className="absolute top-1/2 left-1/2 w-1 origin-bottom opacity-5"
+                className="absolute top-1/2 left-1/2 w-0.5 origin-bottom opacity-[0.06]"
                 style={{
-                  height: '60vh',
+                  height: '65vh',
                   transform: `translate(-50%, -100%) rotate(${deg}deg)`,
                   background: 'linear-gradient(to top, transparent, #00AE9D)',
                 }}
@@ -98,64 +99,58 @@ export default function RoletaPage() {
             ))}
           </div>
 
-          <div className="relative z-10 flex flex-col items-center px-8 py-10 text-center max-w-2xl mx-auto">
+          {/* Troféu */}
+          <div className="relative z-10 animate-pop-in flex-shrink-0 pt-4">
+            <div className="absolute inset-0 rounded-full bg-primary/20 blur-3xl scale-[2] animate-pulse" />
+            <div className="text-[130px] leading-none relative z-10 animate-bounce-slow filter drop-shadow-2xl">🏆</div>
+            <div className="absolute -top-4 -right-4 text-5xl animate-spin-slow">{medalha}</div>
+            <div className="absolute -bottom-2 -left-5 text-4xl animate-spin-slow" style={{ animationDirection: 'reverse' }}>⭐</div>
+            <div className="absolute top-1/2 -right-8 text-3xl animate-star-twinkle">✨</div>
+          </div>
 
-            {/* Troféu */}
-            <div className="relative mb-4 animate-pop-in">
-              <div className="absolute inset-0 rounded-full bg-primary/20 blur-3xl scale-150 animate-pulse" />
-              <div className="text-[120px] leading-none relative z-10 animate-bounce-slow filter drop-shadow-2xl">
-                🏆
-              </div>
-              <div className="absolute -top-4 -right-4 text-5xl animate-spin-slow">{medalha}</div>
-              <div className="absolute -bottom-2 -left-4 text-4xl animate-spin-slow" style={{ animationDirection: 'reverse' }}>⭐</div>
-              <div className="absolute top-1/2 -right-8 text-3xl animate-star-twinkle">✨</div>
-              <div className="absolute top-0 left-0 text-3xl animate-star-twinkle" style={{ animationDelay: '0.7s' }}>✨</div>
-            </div>
-
-            {/* Título */}
-            <h1 className="text-7xl font-black text-white font-display mb-2 animate-fade-in animate-shimmer"
-              style={{ animationDelay: '0.3s' }}>
+          {/* Título + pontuação */}
+          <div className="relative z-10 text-center space-y-4" style={{ animation: 'slideUp 0.5s 0.3s ease-out both' }}>
+            <h1 className="text-8xl font-black text-white font-display animate-shimmer">
               PARABÉNS!
             </h1>
-            <p className="text-gray-300 text-xl mb-6 animate-fade-in" style={{ animationDelay: '0.5s' }}>
-              Você completou o quiz com sucesso!
-            </p>
+            <p className="text-2xl text-gray-300">Você completou o quiz com sucesso!</p>
 
-            {/* Resultado do quiz */}
-            <div className="flex items-center gap-4 mb-6 animate-slide-up" style={{ animationDelay: '0.6s' }}>
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl px-7 py-4 border border-white/20">
-                <div className="text-4xl font-black text-primary">{acertos}</div>
-                <div className="text-gray-400 text-sm">de {totalPerguntas} acertos</div>
+            <div className="flex items-center justify-center gap-6 mt-4">
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl px-8 py-5 border border-white/20 text-center">
+                <div className="text-5xl font-black text-primary">{acertos}</div>
+                <div className="text-gray-400 text-base mt-1">de {totalPerguntas} acertos</div>
               </div>
-              <div className="text-gray-600 text-3xl font-thin">|</div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl px-7 py-4 border border-white/20">
-                <div className="text-4xl font-black text-[#7DB61C]">{percentualAcerto}%</div>
-                <div className="text-gray-400 text-sm">aproveitamento</div>
+              <div className="text-gray-600 text-4xl">|</div>
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl px-8 py-5 border border-white/20 text-center">
+                <div className="text-5xl font-black text-[#7DB61C]">{percentualAcerto}%</div>
+                <div className="text-gray-400 text-base mt-1">aproveitamento</div>
               </div>
             </div>
+          </div>
 
-            {/* Prêmio */}
-            <div
-              className="w-full rounded-3xl p-6 border-2 mb-6 animate-scale-in shadow-2xl"
+          {/* Prêmio */}
+          <div className="relative z-10 w-full max-w-xl animate-scale-in" style={{ animationDelay: '0.5s' }}>
+            <div className="rounded-3xl p-8 border-2 shadow-2xl text-center"
               style={{
-                animationDelay: '0.7s',
                 background: 'linear-gradient(135deg, rgba(0,174,157,0.25), rgba(125,182,28,0.15))',
                 borderColor: 'rgba(0,174,157,0.6)',
-                boxShadow: '0 0 40px rgba(0,174,157,0.2)',
-              }}
-            >
-              <p className="text-gray-300 text-lg mb-1">Você ganhou:</p>
-              <p className="text-5xl font-black text-white font-display mb-2 animate-shimmer">
+                boxShadow: '0 0 50px rgba(0,174,157,0.25)',
+              }}>
+              <p className="text-gray-300 text-xl mb-2">Você ganhou:</p>
+              <p className="text-6xl font-black text-white font-display animate-shimmer leading-tight">
                 {premioSorteado.nome}
               </p>
               {premioSorteado.descricao && (
-                <p className="text-gray-300 text-lg">{premioSorteado.descricao}</p>
+                <p className="text-gray-300 text-lg mt-3">{premioSorteado.descricao}</p>
               )}
             </div>
+          </div>
 
+          {/* Botão */}
+          <div className="relative z-10 w-full max-w-xl">
             <button
-              onClick={() => { resetSession(); router.push('/') }}
-              className="px-12 py-4 rounded-2xl border-2 border-white/30 text-white font-semibold text-lg hover:bg-white/10 transition-all active:scale-95"
+              onClick={() => { resetSession() }}
+              className="w-full py-6 rounded-2xl border-2 border-white/30 text-white font-bold text-2xl hover:bg-white/10 transition-all active:scale-95"
             >
               Jogar novamente
             </button>
@@ -165,44 +160,45 @@ export default function RoletaPage() {
     )
   }
 
-  // ── Tela da roleta ───────────────────────────────────────────────────────────
+  // ── Tela da roleta ───────────────────────────────────────────────
   return (
     <div className="kiosk-scroll">
       <InactivityReset />
-      <div className="min-h-screen flex flex-col items-center justify-center px-8 py-12 relative overflow-hidden"
-        style={{ background: 'linear-gradient(135deg, #001f28 0%, #003641 40%, #004d5c 70%, #001f28 100%)' }}>
+      <div className="min-h-screen flex flex-col items-center justify-between px-8 py-12 relative overflow-hidden"
+        style={{ background: 'linear-gradient(180deg, #001f28 0%, #003641 40%, #004d5c 70%, #001f28 100%)' }}>
 
         <AnimatedBackground />
 
-        <div className="relative z-10 text-center mb-8 animate-fade-in">
-          <div className="inline-flex items-center gap-3 bg-white/10 border border-white/20 rounded-2xl px-6 py-3 mb-4">
-            <span className="text-3xl animate-spin-slow">🎡</span>
-            <h1 className="text-3xl font-black text-white font-display">Hora da Sorte!</h1>
+        {/* Header */}
+        <div className="relative z-10 text-center animate-fade-in flex-shrink-0 w-full">
+          <div className="inline-flex items-center gap-3 bg-white/10 border border-white/20 rounded-2xl px-8 py-4 mb-4">
+            <span className="text-4xl animate-spin-slow">🎡</span>
+            <h1 className="text-4xl font-black text-white font-display">Hora da Sorte!</h1>
           </div>
           <p className="text-gray-300 text-xl">Toque no botão e gire a roleta!</p>
-
           <div className="flex items-center justify-center gap-3 mt-4">
-            <div className="bg-white/10 border border-white/20 rounded-xl px-5 py-2.5">
-              <span className="text-primary font-black text-xl">{acertos}</span>
-              <span className="text-gray-400 text-sm ml-1">/ {totalPerguntas} acertos</span>
+            <div className="bg-white/10 border border-white/20 rounded-xl px-6 py-3">
+              <span className="text-primary font-black text-2xl">{acertos}</span>
+              <span className="text-gray-400 text-base ml-1">/ {totalPerguntas} acertos</span>
             </div>
           </div>
         </div>
 
+        {/* Roleta ou sem prêmios */}
         {premios.length === 0 ? (
-          <div className="relative z-10 text-center animate-fade-in space-y-6">
-            <div className="text-7xl">😔</div>
-            <p className="text-white text-xl font-semibold">Nenhum prêmio disponível no momento.</p>
-            <p className="text-gray-400 text-base">Os prêmios serão repostos em breve!</p>
+          <div className="relative z-10 text-center animate-fade-in space-y-6 flex-1 flex flex-col items-center justify-center">
+            <div className="text-8xl">😔</div>
+            <p className="text-white text-2xl font-semibold">Nenhum prêmio disponível no momento.</p>
+            <p className="text-gray-400 text-lg">Os prêmios serão repostos em breve!</p>
             <button
-              onClick={() => { resetSession(); router.push('/') }}
-              className="mt-4 px-12 py-4 rounded-2xl bg-primary hover:bg-primary-hover text-white font-black text-xl shadow-lg shadow-primary/30 transition-all active:scale-95"
+              onClick={() => { resetSession() }}
+              className="px-16 py-5 rounded-2xl bg-primary hover:bg-primary-hover text-white font-black text-2xl shadow-lg shadow-primary/30 transition-all active:scale-95"
             >
               Jogar novamente
             </button>
           </div>
         ) : (
-          <div className="relative z-10">
+          <div className="relative z-10 flex-1 flex items-center justify-center w-full">
             <Roleta
               premios={premios}
               premioSorteado={premioSorteado}
@@ -212,6 +208,9 @@ export default function RoletaPage() {
             />
           </div>
         )}
+
+        {/* Spacer bottom */}
+        <div className="flex-shrink-0 h-4" />
       </div>
     </div>
   )
