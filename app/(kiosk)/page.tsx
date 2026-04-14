@@ -54,8 +54,7 @@ export default function TelaInicial() {
   }, [verificado, etapa, sessaoId, router, resetSession])
 
   const handleJogar = () => {
-    const id = gerarUUID()
-    iniciarSessao(id)
+    iniciarSessao(gerarUUID())
     router.push('/quiz')
   }
 
@@ -73,7 +72,7 @@ export default function TelaInicial() {
     const horaAbertura = config.horario_inicio.slice(0, 5)
     const horaEncerramento = config.horario_fim.slice(0, 5)
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-secondary via-secondary to-[#001f28] relative overflow-hidden px-8">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-secondary relative overflow-hidden px-8">
         <AnimatedBackground />
         <div className="relative z-10 text-center max-w-lg animate-scale-in space-y-6">
           <div className="text-9xl">{config.sistema_ativo ? '🕐' : '🔒'}</div>
@@ -111,18 +110,18 @@ export default function TelaInicial() {
     <div className="kiosk-scroll">
       <InactivityReset />
       <div
-        className="min-h-screen flex flex-col items-center justify-between px-8 py-16 relative overflow-hidden"
-        style={{ background: 'linear-gradient(180deg, #001520 0%, #002d38 30%, #003d4a 60%, #001520 100%)' }}
+        className="min-h-screen flex flex-col items-center justify-between px-8 py-12 relative overflow-hidden"
+        style={{ background: 'linear-gradient(180deg, #001520 0%, #002d38 35%, #003d4a 65%, #001520 100%)' }}
       >
         <AnimatedBackground />
 
-        {/* ── Topo: logo ────────────────────────────── */}
-        <div className="relative z-10 flex flex-col items-center animate-scale-in pt-4">
+        {/* ── Logo ─────────────────────────────────────── */}
+        <div className="relative z-10 flex flex-col items-center animate-scale-in pt-2">
           <div className="relative">
-            <div className="absolute inset-0 rounded-full bg-primary/40 blur-2xl scale-150 animate-pulse" />
-            <div className="w-36 h-36 rounded-full flex items-center justify-center shadow-2xl shadow-primary/60 relative z-10"
+            <div className="absolute inset-0 rounded-full bg-primary/30 blur-xl scale-150" />
+            <div className="w-32 h-32 rounded-full flex items-center justify-center shadow-2xl shadow-primary/50 relative z-10"
               style={{ background: 'linear-gradient(135deg, #00AE9D, #008C7E)' }}>
-              <svg className="w-18 h-18 text-white" style={{ width: 72, height: 72 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="text-white" style={{ width: 64, height: 64 }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                   d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
                 />
@@ -131,53 +130,71 @@ export default function TelaInicial() {
           </div>
         </div>
 
-        {/* ── Centro: título ────────────────────────── */}
-        <div className="relative z-10 text-center space-y-4" style={{ animation: 'slideUp 0.5s 0.1s ease-out both' }}>
-          <h1 className="text-7xl font-black text-white font-display leading-tight">
-            Bem-vindo ao
-          </h1>
+        {/* ── Título ───────────────────────────────────── */}
+        <div className="relative z-10 text-center space-y-3" style={{ animation: 'slideUp 0.5s 0.1s ease-out both' }}>
+          <h1 className="text-7xl font-black text-white font-display leading-tight">Bem-vindo ao</h1>
           <h1 className="text-7xl font-black font-display leading-tight animate-shimmer" style={{ color: '#00AE9D' }}>
             Totem Interativo
           </h1>
-          <p className="text-2xl text-gray-300 max-w-lg mx-auto leading-relaxed mt-4">
-            Responda o quiz, gire a roleta e ganhe prêmios incríveis!
+          <p className="text-xl text-gray-300 max-w-md mx-auto mt-2">
+            Responda o quiz, gire a roleta e ganhe prêmios!
           </p>
         </div>
 
-        {/* ── Passos ───────────────────────────────── */}
-        <div className="relative z-10 w-full max-w-2xl" style={{ animation: 'slideUp 0.5s 0.25s ease-out both' }}>
+        {/* ── Passos ───────────────────────────────────── */}
+        <div className="relative z-10 w-full max-w-2xl" style={{ animation: 'slideUp 0.5s 0.2s ease-out both' }}>
           <div className="grid grid-cols-3 gap-4">
             {[
-              { label: 'Responda\no Quiz',  icon: '🧠', color: 'from-primary/30 to-primary/10',          border: 'border-primary/40',          delay: '0s'    },
-              { label: 'Gire a\nRoleta',    icon: '🎡', color: 'from-[#7DB61C]/30 to-[#7DB61C]/10',      border: 'border-[#7DB61C]/40',        delay: '0.1s'  },
-              { label: 'Ganhe\nPrêmios!',   icon: '🏆', color: 'from-[#49479D]/30 to-[#49479D]/10',      border: 'border-[#49479D]/40',        delay: '0.2s'  },
+              { label: 'Responda\no Quiz',  icon: '🧠', border: 'border-primary/40',     bg: 'rgba(0,174,157,0.12)'   },
+              { label: 'Gire a\nRoleta',    icon: '🎡', border: 'border-[#7DB61C]/40',   bg: 'rgba(125,182,28,0.12)'  },
+              { label: 'Ganhe\nPrêmios!',   icon: '🏆', border: 'border-[#49479D]/40',   bg: 'rgba(73,71,157,0.12)'   },
             ].map((step, i) => (
               <div key={i}
-                className={`flex flex-col items-center gap-3 text-center bg-gradient-to-b ${step.color} border ${step.border} rounded-2xl px-4 py-6`}
-                style={{ animation: `slideUp 0.5s ${step.delay} ease-out both` }}
+                className={`flex flex-col items-center gap-3 text-center border rounded-2xl px-4 py-5`}
+                style={{ background: step.bg, borderColor: step.border.replace('border-', '') }}
               >
-                <div className="text-5xl animate-bounce-slow" style={{ animationDelay: `${i * 0.4}s` }}>
+                <div className="text-4xl animate-bounce-slow" style={{ animationDelay: `${i * 0.4}s` }}>
                   {step.icon}
                 </div>
-                <span className="text-white font-semibold text-lg leading-tight whitespace-pre-line">{step.label}</span>
+                <span className="text-white font-semibold text-base leading-snug whitespace-pre-line">{step.label}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* ── CTA ──────────────────────────────────── */}
-        <div className="relative z-10 w-full max-w-xl" style={{ animation: 'slideUp 0.5s 0.4s ease-out both' }}>
-          <div className="relative">
-            <div className="absolute inset-0 rounded-2xl animate-pulse-ring" />
-            <button
-              onClick={handleJogar}
-              className="relative z-10 w-full text-white text-3xl font-black py-8 rounded-2xl shadow-2xl shadow-primary/50 transition-all active:scale-95 animate-gradient"
-              style={{ background: 'linear-gradient(135deg, #00AE9D, #008C7E, #00AE9D)' }}
-            >
-              Toque para Jogar!
-            </button>
+        {/* ── Regras ───────────────────────────────────── */}
+        <div className="relative z-10 w-full max-w-2xl" style={{ animation: 'slideUp 0.5s 0.3s ease-out both' }}>
+          <div className="bg-white/5 border border-white/10 rounded-2xl px-6 py-4">
+            <p className="text-gray-400 text-sm font-semibold uppercase tracking-widest text-center mb-3">
+              Regras de participação
+            </p>
+            <div className="flex items-center justify-center gap-4 flex-wrap">
+              <div className="flex items-center gap-2 bg-white/8 rounded-xl px-4 py-2 border border-white/10">
+                <span className="text-xl">🔞</span>
+                <span className="text-white font-semibold text-base">Maior de 18 anos</span>
+              </div>
+              <div className="flex items-center gap-2 bg-white/8 rounded-xl px-4 py-2 border border-white/10">
+                <span className="text-xl">🎯</span>
+                <span className="text-white font-semibold text-base">Apenas 1 chance</span>
+              </div>
+              <div className="flex items-center gap-2 bg-white/8 rounded-xl px-4 py-2 border border-white/10">
+                <span className="text-xl">❤️</span>
+                <span className="text-white font-semibold text-base">1 vida — 1 erro</span>
+              </div>
+            </div>
           </div>
-          <p className="text-center text-gray-500 text-base mt-4 animate-pulse">✦ Toque na tela para começar ✦</p>
+        </div>
+
+        {/* ── CTA ──────────────────────────────────────── */}
+        <div className="relative z-10 w-full max-w-xl" style={{ animation: 'slideUp 0.5s 0.4s ease-out both' }}>
+          <button
+            onClick={handleJogar}
+            className="w-full text-white text-3xl font-black py-7 rounded-2xl shadow-2xl shadow-primary/40 transition-all active:scale-95 animate-gradient"
+            style={{ background: 'linear-gradient(135deg, #00AE9D, #008C7E, #00AE9D)' }}
+          >
+            Toque para Jogar!
+          </button>
+          <p className="text-center text-gray-500 text-sm mt-3 animate-pulse">✦ Toque na tela para começar ✦</p>
         </div>
       </div>
     </div>
