@@ -51,7 +51,7 @@ export default function QuizPage() {
 
       await new Promise((resolve) => setTimeout(resolve, 1500))
 
-      if (novosErros > MAX_ERROS) { setPerdeu(true); return }
+      if (novosErros >= MAX_ERROS) { setPerdeu(true); return }
 
       if (indicePergunta + 1 >= perguntas.length) {
         setQuizCompleto(novoAcertos, perguntas.length)
